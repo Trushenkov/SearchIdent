@@ -1,10 +1,11 @@
 package ru.tds.search;
 
-import java.util.regex.*;
 import java.io.*;
+import java.util.regex.*;
 
 /**
- * Класс для поиска идентификаторов из файла с расширением .java
+ * Класс для поиска идентификаторов из файла ManyFiles.java и их записи в отдельный текстовый файл, а также для чтения файла
+ * ManyFiles.java и записи этой программы в отдельный текстоввый файл без комментариев и лишних пробельных символов.
  *
  * @author Trushenkov Dmitry 15ОИТ18
  */
@@ -12,81 +13,90 @@ public class Search {
     public static void main(String[] args) throws IOException {
         String string;
         Pattern p = Pattern.compile(".+");
-        Matcher matcher123 = p.matcher("");
+        Matcher matcherForAllprogramm = p.matcher("");
+
+        Pattern spaces = Pattern.compile("\\s{4}|\\s{8}");
+        Matcher matcherForSpaces = spaces.matcher("");
 
         Pattern pattern = Pattern.compile("[A-Za-z_]+\\w*");
-        Matcher matcher = pattern.matcher("");
+        Matcher matcherForIdentificator = pattern.matcher("");
 
         Pattern pComment = Pattern.compile("\\/\\*\\*.+?\\*\\/");
-        Matcher mCOMENT = pComment.matcher("");
+        Matcher matcherForComments = pComment.matcher("");
 
-        Pattern pCONST = Pattern.compile("\\\".+?\\\"");
-        Matcher mCONST = pCONST.matcher("");
-/**
- * Для всей программ
- */
+        /**
+         * Запись всей прогрыммы в одну строку, используя для этого шаблон регулярных выражений.
+         */
         try (
-                BufferedReader reader = new BufferedReader(new FileReader("ManyFiles.java"));
-                BufferedWriter writer = new BufferedWriter(new FileWriter("Вся программа полностью в одну строку.txt"));
+                BufferedReader reader = new BufferedReader(new FileReader("ManyFiles2.java"));
+                BufferedWriter writer = new BufferedWriter(new FileWriter("AllProgrammOneString.txt"))
         ) {
             while ((string = reader.readLine()) != null) {
-                matcher123.reset(string);
+                matcherForAllprogramm.reset(string);
 
-                while (matcher123.find()) {
-                    writer.write((matcher123.group()));
+                while (matcherForAllprogramm.find()) {
+                    writer.write((matcherForAllprogramm.group()));
                 }
             }
         }
 
         /**
-         * Для поиска ковычек
+         * Поиск в файле AllProgrammOneString.txt комментариев, используя регулярные выражения,
+         * и замена их на пустую строку. Запись программы без комментариев в файл ProgrammWithoutComments.txt.
          */
-        try (
-                BufferedWriter writer = new BufferedWriter(new FileWriter("Ковычки.txt"));
-                BufferedReader programm = new BufferedReader(new FileReader("Вся программа полностью в одну строку.txt"))
-        ) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("ProgrammWithoutComments.txt"));
+             BufferedReader programm = new BufferedReader(new FileReader("AllProgrammOneString.txt"))) {
             while ((string = programm.readLine()) != null) {
-                mCONST.reset(string);
-                while (mCONST.find()) {
-                    writer.write(mCONST.group());
+                matcherForComments.reset(string);
+                while (matcherForComments.find()) {
+                    string = string.replaceAll("\\/\\*\\*.+?\\*\\/", " ");
                 }
-            }
-        }
-/**
- * Для поиска комментриев
- */
-        try (
-                BufferedWriter writer2 = new BufferedWriter(new FileWriter("Комментарии.txt"));
-                BufferedReader proga = new BufferedReader(new FileReader("Вся программа полностью в одну строку.txt"))
-        ) {
-            while ((string = proga.readLine()) != null) {
-                mCOMENT.reset(string);
-                while (mCOMENT.find()) {
-                    writer2.write(mCOMENT.group());
+                matcherForAllprogramm.reset(string);
+                while (matcherForAllprogramm.find()) {
+                    writer.write(matcherForAllprogramm.group());
                 }
             }
         }
         /**
-         * Поиск коментариев и ковычек в исходном файле с расширением .java и замена на пустую строку
+         * Поиск идентификаторов в файле, содержащем исходную программу в одну строку,
+         * игнорируя идентификаторы в комментариях путем замены комментариев на пустую строку.
          */
         try (
-                BufferedWriter writer = new BufferedWriter(new FileWriter("ВСе идентификаторы кроме комментов и ковычек.txt"));
-                BufferedReader proga = new BufferedReader(new FileReader("Вся программа полностью в одну строку.txt"))
+                BufferedWriter writer = new BufferedWriter(new FileWriter("AllIdentificatorsWithoutComments.txt"));
+                BufferedReader prorammToString = new BufferedReader(new FileReader("AllProgrammOneString.txt"))
         ) {
-            while ((string = proga.readLine()) != null) {
-                mCOMENT.reset(string);
-                mCONST.reset(string);
-                while (mCOMENT.find() && mCONST.find()) {
+            while ((string = prorammToString.readLine()) != null) {
+                matcherForComments.reset(string);
+                while (matcherForComments.find()) {
                     string = string.replaceAll("\\/\\*\\*.+?\\*\\/", "");
-                    string = string.replaceAll("\\\".+?\\\"", "");
-
                 }
-                matcher.reset(string);
-                while (matcher.find()) {
-                    writer.write(matcher.group() + "\n");
+                matcherForIdentificator.reset(string);
+                while (matcherForIdentificator.find()) {
+                    writer.write(matcherForIdentificator.group() + "\n");
                 }
             }
         }
+        /**
+         * В файле ProgrammWithoutComments.txt, содержащем программу без
+         * комментариев производится поиск и удаление лишних пробельных символов.
+         * Запись в файл ProgrammWithoutCommentsAndExtraSpaces.txt программы без лишних пробельных символов.
+         */
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File("ProgrammWithoutCommentsAndExtraSpaces.java")));
+             BufferedReader programm = new BufferedReader(new FileReader("ProgrammWithoutComments.txt"))) {
+            while ((string = programm.readLine()) != null) {
+                matcherForSpaces.reset(string);
+                while (matcherForSpaces.find()) {
+                    string = string.replaceAll("\\s+", " ");
+                }
+                matcherForAllprogramm.reset(string);
+                while (matcherForAllprogramm.find()) {
+                    writer.write(matcherForAllprogramm.group());
+                }
+
+            }
+        }
+
     }
 }
+
 
