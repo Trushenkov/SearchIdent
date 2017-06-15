@@ -8,6 +8,7 @@ import java.io.*;
  * @author Trushenkov Dmitry 15ОИТ18.
  */
 public class ManyFiles2 {
+
     public static void main(String[] args) throws IOException {
         DataOutputStream writer = new DataOutputStream(new FileOutputStream(new File("int6data.dat")));
         DataInputStream reader = new DataInputStream(new FileInputStream(new File("intdata.dat")));
